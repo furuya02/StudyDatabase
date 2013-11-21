@@ -13,12 +13,12 @@ namespace StudyDatabase.Controllers
 {
     public class StudyFileController : Controller
     {
-        private StudyDatabaseContext db = new StudyDatabaseContext();
+        private readonly StudyDatabaseContext _db = new StudyDatabaseContext();
 
         // GET: /StudyFile/
         public ActionResult Index()
         {
-            return View(db.StudyFiles.ToList());
+            return View(_db.StudyFiles.ToList());
         }
 
         // GET: /StudyFile/Details/5
@@ -28,7 +28,7 @@ namespace StudyDatabase.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            StudyFile studyfile = db.StudyFiles.Find(id);
+            StudyFile studyfile = _db.StudyFiles.Find(id);
             if (studyfile == null)
             {
                 return HttpNotFound();
@@ -53,6 +53,12 @@ namespace StudyDatabase.Controllers
                 Keywords = new List<Keyword>(){},
                 UpdateAt = DateTime.Now
             };
+
+            var path = Server.MapPath(string.Format("~/Files/{0}", studyfile.Filename));
+            file.SaveAs(path);
+
+            _db.StudyFiles.Add(studyfile);
+            _db.SaveChanges();
             return View(studyfile);
         }
 
@@ -63,7 +69,7 @@ namespace StudyDatabase.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            StudyFile studyfile = db.StudyFiles.Find(id);
+            StudyFile studyfile = _db.StudyFiles.Find(id);
             if (studyfile == null)
             {
                 return HttpNotFound();
@@ -80,8 +86,8 @@ namespace StudyDatabase.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(studyfile).State = EntityState.Modified;
-                db.SaveChanges();
+                _db.Entry(studyfile).State = EntityState.Modified;
+                _db.SaveChanges();
                 return RedirectToAction("Index");
             }
             return View(studyfile);
@@ -94,7 +100,7 @@ namespace StudyDatabase.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            StudyFile studyfile = db.StudyFiles.Find(id);
+            StudyFile studyfile = _db.StudyFiles.Find(id);
             if (studyfile == null)
             {
                 return HttpNotFound();
@@ -107,9 +113,9 @@ namespace StudyDatabase.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            StudyFile studyfile = db.StudyFiles.Find(id);
-            db.StudyFiles.Remove(studyfile);
-            db.SaveChanges();
+            StudyFile studyfile = _db.StudyFiles.Find(id);
+            _db.StudyFiles.Remove(studyfile);
+            _db.SaveChanges();
             return RedirectToAction("Index");
         }
 
@@ -117,7 +123,7 @@ namespace StudyDatabase.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                _db.Dispose();
             }
             base.Dispose(disposing);
         }
